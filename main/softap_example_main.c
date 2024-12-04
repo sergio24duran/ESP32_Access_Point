@@ -16,7 +16,8 @@
 #define EXAMPLE_ESP_WIFI_CHANNEL   6
 #define EXAMPLE_MAX_STA_CONN       5
 #define LED_CONN_GPIO              18 // Cambiado al GPIO 18
-#define LED_WEB_GPIO               14 // Nuevo LED controlado por botones
+#define LED_WEB_GPIO               11 // Nuevo LED controlado por botones
+// ill add some changes to this
 
 static const char *TAG = "wifi softAP";
 

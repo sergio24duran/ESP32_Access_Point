@@ -12,11 +12,11 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-#define EXAMPLE_ESP_WIFI_SSID      "MI_WIFI_SALON"
-#define EXAMPLE_ESP_WIFI_CHANNEL   6
-#define EXAMPLE_MAX_STA_CONN       5
-#define LED_CONN_GPIO              18 // Cambiado al GPIO 18
-#define LED_WEB_GPIO               14 // Nuevo LED controlado por botones
+#define EXAMPLE_ESP_WIFI_SSID "MI_WIFI_SALON"
+#define EXAMPLE_ESP_WIFI_CHANNEL 6
+#define EXAMPLE_MAX_STA_CONN 5
+#define LED_CONN_GPIO 18 // Cambiado al GPIO 18
+#define LED_WEB_GPIO 14  // Nuevo LED controlado por botones
 
 static const char *TAG = "wifi softAP";
 
@@ -25,28 +25,31 @@ static int device_count = 0;
 // Control del estado del LED del botón
 static int led_web_state = 0;
 
-static void wifi_event_handler(void* arg, esp_event_base_t event_base,
-                                    int32_t event_id, void* event_data)
+static void wifi_event_handler(void *arg, esp_event_base_t event_base,
+                               int32_t event_id, void *event_data)
 {
-    if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",
+    if (event_id == WIFI_EVENT_AP_STACONNECTED)
+    {
+        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
+        ESP_LOGI(TAG, "station " MACSTR " join, AID=%d",
                  MAC2STR(event->mac), event->aid);
 
         // Enciende el LED de conexión
         gpio_set_level(LED_CONN_GPIO, 1);
-        
+
         // Espera 3 segundos (3000 ms)
         vTaskDelay(3000 / portTICK_PERIOD_MS);
-        
+
         // Apaga el LED de conexión
         gpio_set_level(LED_CONN_GPIO, 0);
 
         // Incrementa el contador de dispositivos
         device_count++;
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d, reason=%d",
+    }
+    else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
+    {
+        wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
+        ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d, reason=%d",
                  MAC2STR(event->mac), event->aid, event->reason);
 
         // Decrementa el contador de dispositivos
@@ -105,7 +108,7 @@ esp_err_t get_handler(httpd_req_t *req)
 esp_err_t led_on_handler(httpd_req_t *req)
 {
     gpio_set_level(LED_WEB_GPIO, 1); // Enciende el LED
-    led_web_state = 1;              // Actualiza el estado del LED
+    led_web_state = 1;               // Actualiza el estado del LED
     httpd_resp_send(req, "LED encendido", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -113,7 +116,7 @@ esp_err_t led_on_handler(httpd_req_t *req)
 esp_err_t led_off_handler(httpd_req_t *req)
 {
     gpio_set_level(LED_WEB_GPIO, 0); // Apaga el LED
-    led_web_state = 0;              // Actualiza el estado del LED
+    led_web_state = 0;               // Actualiza el estado del LED
     httpd_resp_send(req, "LED apagado", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -124,38 +127,38 @@ void start_webserver(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.server_port = 2244;
     ESP_LOGI(TAG, "Iniciando el servidor HTTP...");
-    
+
     // Inicia el servidor httpd
-    if (httpd_start(&server, &config) == ESP_OK) {
+    if (httpd_start(&server, &config) == ESP_OK)
+    {
         ESP_LOGI(TAG, "Servidor HTTP iniciado en puerto %d", config.server_port);
-        
+
         // Página principal
         httpd_uri_t get_uri = {
-            .uri       = "/",
-            .method    = HTTP_GET,
-            .handler   = get_handler,
-            .user_ctx  = NULL
-        };
+            .uri = "/",
+            .method = HTTP_GET,
+            .handler = get_handler,
+            .user_ctx = NULL};
         httpd_register_uri_handler(server, &get_uri);
 
         // Control del LED: encender
         httpd_uri_t led_on_uri = {
-            .uri       = "/led/on",
-            .method    = HTTP_GET,
-            .handler   = led_on_handler,
-            .user_ctx  = NULL
-        };
+            .uri = "/led/on",
+            .method = HTTP_GET,
+            .handler = led_on_handler,
+            .user_ctx = NULL};
         httpd_register_uri_handler(server, &led_on_uri);
 
         // Control del LED: apagar
         httpd_uri_t led_off_uri = {
-            .uri       = "/led/off",
-            .method    = HTTP_GET,
-            .handler   = led_off_handler,
-            .user_ctx  = NULL
-        };
+            .uri = "/led/off",
+            .method = HTTP_GET,
+            .handler = led_off_handler,
+            .user_ctx = NULL};
         httpd_register_uri_handler(server, &led_off_uri);
-    } else {
+    }
+    else
+    {
         ESP_LOGE(TAG, "Error iniciando el servidor HTTP!");
     }
 }
@@ -184,7 +187,7 @@ void wifi_init_softap(void)
             .max_connection = EXAMPLE_MAX_STA_CONN,
             .authmode = WIFI_AUTH_OPEN,
             .pmf_cfg = {
-                    .required = true,
+                .required = true,
             },
         },
     };
@@ -201,9 +204,10 @@ void app_main(void)
 {
     // Inicializa NVS
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
 
